@@ -6,18 +6,24 @@ const user = mongoose.Schema({
         required: true,
     },
     mobile: {
-        type: String,
+        type: Number,
         required: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: function (v) {
+                return v.toString().length == 10 ? true : false;
+            },
+            message: '{VALUE} is not a valid 10 digit number!'
+        }
     },
     password: {
         type: String,
         require: true
     },
-    firms: [{
+    firms: {
         type: mongoose.Types.ObjectId,
         ref: "firm"
-    }],
+    },
     verified: {
         type: Boolean,
         default: false

@@ -23,9 +23,16 @@ router.post("/signup", (req, res) => {
                 })
             })
             .catch(err => {
+
                 if (err.code == 11000) {
                     res.status(400).json({
                         message: `Mobile no ${err.keyValue.mobile} is allredy awailable`
+                    })
+                }
+                else if (err.errors.mobile) {
+                    res.status(400).json({
+                        message: err.errors.mobile.message,
+                        value: err
                     })
                 }
                 else {

@@ -16,9 +16,11 @@ app.use(cors());
 
 const user = require("./routers/user");
 const firm = require("./routers/firm");
+const order = require("./routers/order");
 
 app.use("/user", user);
 app.use('/firm', firm);
+app.use("/order", order);
 
 
 
