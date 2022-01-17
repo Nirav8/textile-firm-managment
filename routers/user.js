@@ -2,11 +2,12 @@ const express = require("express");
 const users = require("../models/users");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const s_key = require("../constant.js");
 
 //signup users
 router.post("/signup", (req, res) => {
     try {
-        const password = req.body.password //TODO encrypt and then save then password
+        let password = bcrypt.hashSync(req.body.password, 10) //TODO encrypt and then save then password
         const User = users({
             name: req.body.name,
             mobile: req.body.mobile,
@@ -16,7 +17,7 @@ router.post("/signup", (req, res) => {
         User.save()
             .then(result => {
                 res.status(200).json({
-                    message: "User created Sucssesfully",
+                    message: "User Created Sucssesfully",
                     session: "implement soon",//TODO
                     value: result
                 })
@@ -51,22 +52,25 @@ router.post("/signup", (req, res) => {
 //DONE
 router.post("/login", (req, res) => {
     try {
-        const name = req.body.name;
-        const password = req.body.password; //TODO incrypt and check before login for password
-
-        users.findOne({ $and: [{ name: name }, { password: password }] })
+        users.findOne({ name: req.body.name })
             .then(result => {
-                if (result) {
-                    res.status(200).json({
-                        message: "login succsessfull",
-                        session: "implement soon" //TODO implement sesssion
-                    })
+                if (result == null) {
+                    res.json({ message: 'Invalid userId' })
                 }
-                else {
-                    res.status(403).json({
-                        message: "Invalid username or password!!"
-                    })
-                }
+                bcrypt.compare(req.body.password, result.password, (error, result) => {
+                    if (result) {
+                        return res.status(200).json({
+                            message: "login sucsessfull",
+                            session: "implement soon" //TODO 
+                        });
+                    }
+                    else {
+                        return res.status(401).json({
+                            message: 'Invalid userid or password'
+                        });
+                    }
+                })
+
             })
             .catch(err => {
                 res.status(400).json({

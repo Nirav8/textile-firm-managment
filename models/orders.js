@@ -4,7 +4,6 @@ require("mongoose-type-url");
 const firm = require("./firms");
 const user = require("./users");
 
-
 const order = mongoose.Schema({
     firm: {
         type: mongoose.Types.ObjectId,

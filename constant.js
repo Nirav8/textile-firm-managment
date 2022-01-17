@@ -2,5 +2,5 @@
 //TODO
 
 const base_url = "http://localhost:3000";
-
-module.exports = base_url;
+const s_key = "452@213))nkjdls_+"
+module.exports = { base_url, };
