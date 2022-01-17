@@ -20,10 +20,6 @@ const user = mongoose.Schema({
         type: String,
         require: true
     },
-    firms: {
-        type: mongoose.Types.ObjectId,
-        ref: "firm"
-    },
     verified: {
         type: Boolean,
         default: false

@@ -1,5 +1,5 @@
 // timestamp ,
-// mobileno,//TODO
+// mobileno,
 // name,
 // createdby
 // join
@@ -17,6 +17,8 @@ const firm = mongoose.Schema({
         required: true,
         ref: "user"
     },
+    //TODO
+    //! when will second user will join
     joinBy: {
         type: mongoose.Types.ObjectId
     },

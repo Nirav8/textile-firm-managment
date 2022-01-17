@@ -31,7 +31,12 @@ const status = mongoose.Schema({
             },
             message: `invalid userID or User is not available`
         }
-    }
+    },
+    deliveryStatus: [{
+        DQ: { type: Number }, //delivered quantity
+        date: { type: Date }
+    }, { timeStamps: true }],
+
 });
 
 function Uservalidate(value) {
