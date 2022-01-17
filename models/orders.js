@@ -21,36 +21,41 @@ const order = mongoose.Schema({
     },
     itemInfo: {
         imageURl: {
-            type: mongoose.SchemaTypes.Url,
+            type: String,
         },
         detail: { type: String },
         price: { type: Number }
     },
-    // forward_info: [{
-    //     forward: {
-    //         type: mongoose.Types.ObjectId,
-    //         validator: function (v) {
-    //             return user.exists({ _id: v });
-    //         },
-    //         message: `invalid userID or User is not available`
-    //     },
-    //     status: {
-    //         type: string,
-    //         default: "pendding"
-    //     }
-    // }]
-    forward: {
-        type: mongoose.Types.ObjectId,
-        validator: function (v) {
-            return user.exists({ _id: v });
+    forward_info: [{
+        user_id: {
+            type: mongoose.Types.ObjectId,
+            ref: "users",
+            validate: {
+                validator: function (v) {
+                    return user.exists({ _id: v });
+                },
+            },
+            message: `invalid userID or User is not available`
         },
-        message: `invalid userID or User is not available`
-    },
+        quantity: {
+            type: Number
+        }
+    }],
     deliveryStatus: [{
-        DQ: { type: Number },
+        user_id: {
+            type: mongoose.Types.ObjectId,
+            required: true,
+            ref: "users",
+            validate: {
+                validator: function (v) {
+                    return user.exists({ _id: v });
+                },
+            },
+            message: `invalid userID or User is not available`
+        },
+        quantity: { type: Number },
         date: { type: Date }
     }],
-
 }, { timeStamps: true });
 
 

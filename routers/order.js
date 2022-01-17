@@ -3,12 +3,53 @@ const express = require("express");
 const router = express.Router();
 const order = require("../models/orders");
 
-router.post("/addOrder", (req, res) => {
+const base_url = require("../constant.js")
+const multer = require("multer");
+
+function filefilter(req, file, cb) {
+    //TODO filter file type
+
+    // (file.mimnetype === image/jpg || file.mimetype === image/jpg)
+    if (true) {
+        cb(null, true)
+    }
+    else {
+        cb(new Error('file type is not valid type'), false)
+    }
+}
+
+Storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads');
+    },
+    filename: (req, file, cb) => {
+        cb(null, 'Item-Image' + file.originalname)
+    },
+    filefilter: filefilter
+})
+
+const upload = multer({
+    fileFilter: filefilter,
+    storage: Storage,
+    //TODO comment is for limite
+    // limits: {
+    //     fileSize: 1024 * 1024 * 5
+    // },
+})
+
+
+router.post("/addOrder", upload.single("itemImage"), (req, res) => {
     try {
+        const item_info = {
+            detail: req.body.detail,
+            price: req.body.price,
+            imageURl: `${base_url}/${req.file.path}`
+        }
+        console.log(req.file.path)
         const Order = new order({
             firm: req.body.firm,
             quantity: req.body.quantity,
-            itemInfo: req.body.itemInfo
+            itemInfo: item_info
         });
 
         Order.save()
@@ -30,23 +71,45 @@ router.post("/addOrder", (req, res) => {
 //forwar order
 router.put("/forward_order", (req, res) => {
     try {
-        const user_id = req.body.user_id;
+        const forward_info = req.body.forward_info;
         const order_id = req.body.order_id
 
-        order.updateOne({ _id: order_id }, { $push: { forward: user_id } })
+        order.findById({ _id: order_id })
             .then(result => {
-                if (result.modifiedCount >= 1) {
-                    res.status(200).json({
-                        message: "order_forwarded Succsess"
+                if (result == null) {
+                    res.status(401).json({
+                        message: "order_id is not valid"
                     })
                 }
                 else {
-                    res.status(201).json({
-                        message: result
-                    })
+                    let temp_q = 0;
+                    //! allredy deliverd items quantitiy
+                    result.forward_info.forEach(element => {
+                        temp_q += element.quantity
+                    });
+                    //! add new quantity that will added in status
+                    temp_q = forward_info.quantity + temp_q;
+                    //! validate quantity
+                    if (temp_q <= result.quantity) {
+                        order.updateOne({ _id: order_id }, { $push: { forward_info: forward_info } }, { runValidators: true })
+                            .then(result => {
+                                res.status(200).json({
+                                    message: "ordered forwarded succsessfully",
+                                })
+                            })
+                            .catch(err => {
+                                res.status(405).json({ message: err._message })
+                            })
+                    }
+                    else {
+                        res.status(401).json({
+                            message: "quantity is excied from order quantity please enter valid quantity"
+                        })
+                    }
                 }
             })
             .catch(err => {
+                console.log(err)
                 res.status(400).json({
                     message: err
                 })
@@ -55,44 +118,49 @@ router.put("/forward_order", (req, res) => {
         res.status(500).json({
             message: "internal server"
         })
-     }
+    }
 })
 
 
+
 //update delivery status
-router.put("/delivery_status", (req, res)=>{
-        const order_id = req.body.order_id;
-        const status = req.body.status;
-        order.findById({_id: order_id})
-        .then(result=>{
-            let temp_q = 0;
-            //! all redy deliverd items quantitiy
-            result.deliveryStatus.forEach(element => {
-                temp_q += element.DQ
-            });
-            //! add new quantity that will added in status
-            temp_q += status.DQ
-            //! validate quantity
-            if(temp_q <= result.quantity ){
-                order.updateOne({_id: order_id}, {$push: {deliveryStatus: status}}, { runValidators: true })
-                .then(
-                    res.status(200).json({
-                    message: "delivery quantity is updated succsessfull;y"
-                }))
-                .catch(err=>{
-                    res.status(401).json({
-                        message: err
-                    })
+router.put("/delivery_status", (req, res) => {
+    const order_id = req.body.order_id;
+    const delivery_info = req.body.delivery_info;
+    order.findById({ _id: order_id })
+        .then(result => {
+            if (result == null) {
+                res.status(401).json({
+                    message: "Invalid order_id"
                 })
             }
-            else{
+            let temp_q = 0;
+            //! allredy deliverd items quantitiy
+            result.deliveryStatus.forEach(element => {
+                temp_q += element.quantity
+            });
+            //! add new quantity that will added in status
+            temp_q += delivery_info.quantity
+            //! validate quantity
+            if (temp_q <= result.quantity) {
+                order.updateOne({ _id: order_id }, { $push: { deliveryStatus: delivery_info } }, { runValidators: true })
+                    .then(result => {
+                        res.status(200).json({
+                            message: "delivery status is updated"
+                        })
+                    })
+                    .catch(err => {
+                        res.status(405).json({ message: err._message })
+                    })
+            }
+            else {
                 res.status(401).json({
                     message: "quantity is excied from order quantity please enter valid quantity"
                 })
             }
-            
         })
-        .catch(err =>{
+        .catch(err => {
+            console.log(err)
             res.status(400).json({
                 message: err
             })

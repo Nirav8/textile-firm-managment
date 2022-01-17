@@ -10,6 +10,7 @@ const app = express();
 
 mongoose.connect('mongodb://localhost:27017/textile-firm', { useUnifiedTopology: true, })
 
+app.use("/uploads", express.static('uploads'));
 app.use(morgan('dev'));
 app.use(bodyparser.json());
 app.use(cors());
@@ -23,7 +24,6 @@ app.use('/firm', firm);
 app.use("/order", order);
 
 
-
 app.use((req, res, next) => {
     const error = new Error('Not Founded');
     res.status = 404;
@@ -31,10 +31,9 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-    res.status(402).json({
+    res.json({
         error: error.message
     })
 });
-
 
 module.exports = app;
