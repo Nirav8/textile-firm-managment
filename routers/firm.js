@@ -4,12 +4,10 @@ const firm = require("../models/firms");
 
 const router = express.Router();
 
+
 router.post("/addFirm", (req, res) => {
     try {
-        const Firm = new firm({
-            name: req.body.name,
-            createdBy: req.body.createdBy
-        })
+        const Firm = new firm(req.body)
 
         Firm.save()
             .then(result => {
@@ -26,7 +24,7 @@ router.post("/addFirm", (req, res) => {
                 }
                 else if (err._message) {
                     res.status(501).json({
-                        message: err._message
+                        message: err
                     })
                 }
                 else {
@@ -43,7 +41,4 @@ router.post("/addFirm", (req, res) => {
 })
 
 
-
-
-
-module.exports = router;
+module.exports = router;    

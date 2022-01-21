@@ -1,27 +1,21 @@
-// timestamp ,
-// mobileno,
-// name,
-// createdby
-// join
-
 const mongoose = require('mongoose');
+const idValidator = require('mongoose-id-validator');
 
 const firm = mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    createdBy: {
+    user1: {
         type: mongoose.Types.ObjectId,
-        required: true,
         ref: "user"
     },
-    //TODO
-    //! when will second user will join
-    joinBy: {
-        type: mongoose.Types.ObjectId
+    user2: {
+        type: mongoose.Types.ObjectId,
+        ref: "user"
     },
+    orders: [{
+        type: mongoose.Types.ObjectId,
+        ref: "order"
+    }]
 }, { timestamps: true });
+
+firm.plugin(idValidator);
 
 module.exports = mongoose.model("firm", firm)
